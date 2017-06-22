@@ -35,14 +35,13 @@ class TileGrabber:
             
         
     
-    def getTile(self, bbox): 
+    def getTile(self, bbox, target_size): 
 
         (x1, y1, x2, y2) = bbox
 
 
         nad_width = x1-x2
         nad_height = y1-y2
-        target_size = (2850, 1000)
 
         print("Attempting to get tile of size {}".format(target_size))
         image_size = self.getImageSize((nad_width, nad_height), target_size)
@@ -64,6 +63,29 @@ class TileGrabber:
         image.write(imagedata.read())
         image.close()
 
+    def subdivide(self, nad_bbox, viewport_size, segments):
+        (x_segments, y_segments) = segments
+        (x1,y1,x2,y2) = nad_bbox
+        nad_width = x1 - x2
+        nad_height = y1 - y2
+        (view_w, view_h) = viewport_size
+
+        segments = []
+
+        for y_offset in range(y_segments):
+            for x_offset in range(x_segments):
+                tile_x1 = x1 + x_offset*nad_width/x_segments
+                tile_y1 = y1 + y_offset*nad_height/y_segments
+                tile_x2 = x2 + x_offset*nad_width/x_segments
+                tile_y2 = y2 + y_offset*nad_height/y_segments
+                tile_width = view_w/x_segments
+                tile_height = view_h/y_segments
+                segments.append(
+                    ((tile_x1, tile_y1, tile_x2, tile_y2),
+                    (tile_width, tile_height))
+                )
+        return segments
+
 
 def main():
 
@@ -74,8 +96,17 @@ def main():
 
     tiler = TileGrabber()
 
-    img = tiler.getTile((x1,y1,x2,y2))
-    tiler.saveImage(img,'tile1.png')
+    target_size = (320, 240)
+    segments = (3, 3)
+
+    tiles = tiler.subdivide((x1,y1,x2,y2), target_size, segments)
+
+    tile_count = 0
+    for tile in tiles:
+        (bbox, tile_size) = tile
+        img = tiler.getTile(bbox, tile_size)
+        tiler.saveImage(img,'tile{}.png'.format(tile_count))
+        tile_count += 1
 
 if __name__ == '__main__':
     main()
