@@ -97,7 +97,7 @@ def main():
     tiler = TileGrabber()
 
     target_size = (320, 240)
-    segments = (3, 3)
+    segments = (2, 2)
 
     tiles = tiler.subdivide((x1,y1,x2,y2), target_size, segments)
 
@@ -105,6 +105,7 @@ def main():
     for tile in tiles:
         (bbox, tile_size) = tile
         img = tiler.getTile(bbox, tile_size)
+        print("Requesting tile {}: ({})".format(tile_count, bbox))
         tiler.saveImage(img,'tile{}.png'.format(tile_count))
         tile_count += 1
 
